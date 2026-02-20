@@ -7,7 +7,7 @@
 *.dll
 *.so
 *.dylib
-
+/monitoringSystem
 # Test binary, built with `go test -c`
 *.test
 
@@ -28,5 +28,6 @@ go.work.sum
 .env
 
 # Editor/IDE
-# .idea/
-# .vscode/
+.idea/
+.vscode/
+.DS_Store
