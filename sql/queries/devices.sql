@@ -8,10 +8,10 @@ SELECT * FROM devices WHERE id = $1;
 
 -- name: ListDevices :many
 SELECT * FROM devices
-WHERE ($1::text IS NULL OR site = $1)
-  AND ($2::text IS NULL OR status = $2)
+WHERE (sqlc.narg(site)::text IS NULL OR site = sqlc.narg(site))
+  AND (sqlc.narg(status)::text IS NULL OR status = sqlc.narg(status))
 ORDER BY created_at DESC
-LIMIT $3 OFFSET $4;
+LIMIT sqlc.arg(lim) OFFSET sqlc.arg(off);
 
 -- name: UpdateDeviceLastSeen :exec
 UPDATE devices SET last_seen_at = $2 WHERE id = $1;
