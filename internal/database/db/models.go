@@ -5,12 +5,13 @@
 package db
 
 import (
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Alert struct {
 	ID             int64
-	DeviceID       pgtype.UUID
+	DeviceID       uuid.UUID
 	AlertType      string
 	Severity       string
 	Message        string
@@ -23,7 +24,7 @@ type Alert struct {
 }
 
 type Device struct {
-	ID         pgtype.UUID
+	ID         uuid.UUID
 	Name       string
 	Site       string
 	DeviceType string
@@ -34,7 +35,7 @@ type Device struct {
 
 type Reading struct {
 	ID           int64
-	DeviceID     pgtype.UUID
+	DeviceID     uuid.UUID
 	Ts           pgtype.Timestamptz
 	TemperatureC pgtype.Float8
 	PressureKpa  pgtype.Float8

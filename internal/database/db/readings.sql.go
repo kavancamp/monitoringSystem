@@ -8,6 +8,7 @@ package db
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -18,7 +19,7 @@ RETURNING id, device_id, ts, temperature_c, pressure_kpa, rpm, vibration, payloa
 `
 
 type InsertReadingParams struct {
-	DeviceID     pgtype.UUID
+	DeviceID     uuid.UUID
 	Ts           pgtype.Timestamptz
 	TemperatureC pgtype.Float8
 	PressureKpa  pgtype.Float8
@@ -59,7 +60,7 @@ LIMIT $3
 `
 
 type ListReadingsForDeviceParams struct {
-	DeviceID pgtype.UUID
+	DeviceID uuid.UUID
 	Ts       pgtype.Timestamptz
 	Limit    int32
 }

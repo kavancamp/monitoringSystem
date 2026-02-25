@@ -8,7 +8,7 @@ package db
 import (
 	"context"
 
-	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/google/uuid"
 )
 
 const ackAlert = `-- name: AckAlert :exec
@@ -29,7 +29,7 @@ RETURNING id, device_id, alert_type, severity, message, triggered_at, acknowledg
 `
 
 type CreateAlertParams struct {
-	DeviceID    pgtype.UUID
+	DeviceID    uuid.UUID
 	AlertType   string
 	Severity    string
 	Message     string
@@ -75,7 +75,7 @@ LIMIT $4 OFFSET $5
 type ListAlertsParams struct {
 	Column1 bool
 	Column2 string
-	Column3 pgtype.UUID
+	Column3 uuid.UUID
 	Limit   int32
 	Offset  int32
 }

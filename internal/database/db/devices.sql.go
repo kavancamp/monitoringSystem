@@ -8,6 +8,7 @@ package db
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -18,7 +19,7 @@ RETURNING id, name, site, device_type, status, created_at, last_seen_at
 `
 
 type CreateDeviceParams struct {
-	ID         pgtype.UUID
+	ID         uuid.UUID
 	Name       string
 	Site       string
 	DeviceType string
@@ -48,7 +49,7 @@ const getDevice = `-- name: GetDevice :one
 SELECT id, name, site, device_type, status, created_at, last_seen_at FROM devices WHERE id = $1
 `
 
-func (q *Queries) GetDevice(ctx context.Context, id pgtype.UUID) (Device, error) {
+func (q *Queries) GetDevice(ctx context.Context, id uuid.UUID) (Device, error) {
 	row := q.db.QueryRow(ctx, getDevice, id)
 	var i Device
 	err := row.Scan(
@@ -68,22 +69,22 @@ SELECT id, name, site, device_type, status, created_at, last_seen_at FROM device
 WHERE ($1::text IS NULL OR site = $1)
   AND ($2::text IS NULL OR status = $2)
 ORDER BY created_at DESC
-LIMIT $3 OFFSET $4
+LIMIT $4 OFFSET $3
 `
 
 type ListDevicesParams struct {
-	Column1 string
-	Column2 string
-	Limit   int32
-	Offset  int32
+	Site   pgtype.Text
+	Status pgtype.Text
+	Off    int32
+	Lim    int32
 }
 
 func (q *Queries) ListDevices(ctx context.Context, arg ListDevicesParams) ([]Device, error) {
 	rows, err := q.db.Query(ctx, listDevices,
-		arg.Column1,
-		arg.Column2,
-		arg.Limit,
-		arg.Offset,
+		arg.Site,
+		arg.Status,
+		arg.Off,
+		arg.Lim,
 	)
 	if err != nil {
 		return nil, err
@@ -149,7 +150,7 @@ UPDATE devices SET status = $2 WHERE id = $1
 `
 
 type SetDeviceStatusParams struct {
-	ID     pgtype.UUID
+	ID     uuid.UUID
 	Status string
 }
 
@@ -163,7 +164,7 @@ UPDATE devices SET last_seen_at = $2 WHERE id = $1
 `
 
 type UpdateDeviceLastSeenParams struct {
-	ID         pgtype.UUID
+	ID         uuid.UUID
 	LastSeenAt pgtype.Timestamptz
 }
 
