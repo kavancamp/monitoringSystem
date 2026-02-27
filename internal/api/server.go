@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/kavancamp/monitoringSystem/internal/database/db"
 	"log"
@@ -31,6 +32,7 @@ func (s *Server) Routes() http.Handler {
 	})
 	mux.HandleFunc("/devices", s.handleDevices)
 
+	mux.HandleFunc("/devices/", s.handleDeviceByID)
 	return mux
 }
 
@@ -47,8 +49,47 @@ func (s *Server) handleDevices(w http.ResponseWriter, r *http.Request) {
 	case http.MethodGet:
 		s.listDevices(w, r)
 	default:
+		w.Header().Set("Allow", "GET, POST") // Inform allowed methods
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
+}
+
+func (s *Server) handleDeviceByID(w http.ResponseWriter, r *http.Request) {
+	// Validate method
+	if r.Method != http.MethodGet {
+		w.Header().Set("Allow", http.MethodGet) // Inform allowed method
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	// Extract device ID from URL path
+	id := strings.TrimPrefix(r.URL.Path, "/devices/")
+	if id == "" {
+		http.Error(w, "missing device id", http.StatusBadRequest)
+		return
+	}
+	if strings.Contains(id, "/") {
+		http.Error(w, "Invalid route", http.StatusBadRequest)
+		return
+	}
+	parsedID, err := uuid.Parse(id)
+	if err != nil {
+		http.Error(w, "invalid device ID format", http.StatusBadRequest)
+		return
+	}
+
+	// Simulate fetching device info
+	ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
+	defer cancel()
+	device, err := s.q.GetDevice(ctx, parsedID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			http.Error(w, "Device not found", http.StatusNotFound)
+			return
+		}
+		http.Error(w, "Internal error", http.StatusInternalServerError)
+		return
+	}
+	writeJSON(w, http.StatusOK, device)
 }
 
 func (s *Server) createDevice(w http.ResponseWriter, r *http.Request) {
@@ -144,7 +185,8 @@ func (s *Server) listDevices(w http.ResponseWriter, r *http.Request) {
 		Off:    offset,
 	})
 	if err != nil {
-		http.Error(w, "failed to list devies: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "failed to list devices: "+err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	writeJSON(w, http.StatusOK, devices)
