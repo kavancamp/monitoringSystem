@@ -132,7 +132,7 @@ func (s *Server) listDevices(w http.ResponseWriter, r *http.Request) {
 	if l := qp.Get("offset"); l != "" {
 		n, err := strconv.Atoi(l)
 		if err != nil || n < 0 {
-			http.Error(w, "invalid offset parameter", http.StatusBadRequest)
+			http.Error(w, "Invalid offset parameter", http.StatusBadRequest)
 			return
 		}
 		offset = int32(n)
@@ -180,7 +180,7 @@ func (s *Server) handleDeviceByID(w http.ResponseWriter, r *http.Request) {
 	}
 	parsedID, err := uuid.Parse(id)
 	if err != nil {
-		http.Error(w, "invalid device ID format", http.StatusBadRequest)
+		http.Error(w, "Invalid device ID format", http.StatusBadRequest)
 		return
 	}
 
@@ -208,7 +208,7 @@ func (s *Server) handleReadings(w http.ResponseWriter, r *http.Request) {
 
 	var req createReadingRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "invalid request body", http.StatusBadRequest)
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
@@ -220,7 +220,7 @@ func (s *Server) handleReadings(w http.ResponseWriter, r *http.Request) {
 
 	deviceID, err := uuid.Parse(req.DeviceID)
 	if err != nil {
-		http.Error(w, "invalid device_id format", http.StatusBadRequest)
+		http.Error(w, "Invalid device_id format", http.StatusBadRequest)
 		return
 	}
 
@@ -231,7 +231,7 @@ func (s *Server) handleReadings(w http.ResponseWriter, r *http.Request) {
 	_, err = s.q.GetDevice(ctx, deviceID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			http.Error(w, "Reading not found", http.StatusNotFound)
+			http.Error(w, "Device not found", http.StatusNotFound)
 			return
 		}
 		http.Error(w, "Internal Error", http.StatusInternalServerError)
